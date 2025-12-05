@@ -185,3 +185,33 @@ Pontos identificados para evolução futura do projeto:
 **Autor:** Lucas Paulo de Souza Navegante
 **Créditos:** _anesriad/Regression_ML_EndtoEnd_ que foi o modelo base para este projeto.
 **Data:** 04/12/2025
+
+---
+
+## 📸 Screenshots
+
+Abaixo estão algumas capturas de tela do projeto em funcionamento:
+
+### 1. Dashboard Streamlit
+
+![Dashboard Streamlit](images/screenshot_01.png)
+
+### 2. Interface MLflow
+
+![Interface MLflow](images/screenshot_02.png)
+
+### 3. Detalhes do Experimento
+
+![Detalhes do Experimento](images/screenshot_03.png)
+
+### 4. API Docs (Swagger)
+
+![API Docs](images/screenshot_04.png)
+
+### 5. Execução do Pipeline
+
+![Execução do Pipeline](images/screenshot_05.png)
+
+### 6. GitHub Actions
+
+![GitHub Actions](images/screenshot_06.png)
