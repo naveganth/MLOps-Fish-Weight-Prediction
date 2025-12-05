@@ -79,8 +79,12 @@ def train_model(
         # Logar métricas
         mlflow.log_metrics(metrics)
 
-        # Logar o modelo no MLflow (com assinatura de input opcional, mas recomendado)
-        mlflow.xgboost.log_model(model, "model")
+        # Logar o modelo no MLflow e registar no Registry
+        mlflow.xgboost.log_model(
+            model,
+            "model",
+            registered_model_name="FishWeightPredictor"  # <--- Nome oficial no Registry
+        )
 
         # Salvar localmente (para a API/Docker usar)
         out = Path(model_output)

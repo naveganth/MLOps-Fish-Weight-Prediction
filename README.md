@@ -1,21 +1,44 @@
 # 🐟 Fish Weight Prediction - End-to-End MLOps
 
-Este projeto é uma solução completa de Machine Learning para prever o peso de peixes com base em medidas físicas. O objetivo foi demonstrar boas práticas de MLOps, desde a engenharia de dados até o deploy de uma API escalável e interface de usuário.
+Este projeto é uma solução completa de Machine Learning **para prever o peso de peixes com base em medidas físicas**. O objetivo foi demonstrar boas práticas de MLOps, desde a engenharia de dados até ao deploy de uma API escalável e interface de utilizador.
 
-## 🎯 O Desafio
+## 🏆 Requisitos
 
-Desenvolver um pipeline reprodutível para treinar um modelo de regressão (**XGBoost**), versionar artefatos e disponibilizar o modelo para inferência via API e Docker.
+### 1\. Python + Machine Learning (Obrigatório)
+
+- **Modelo:** Utilizei **XGBoost Regressor**, escolhido pela sua performance em dados tabulares.
+- **Separação:** Separação de responsabilidades em módulos Python:
+  - `src/feature_pipeline`: Ingestão e limpeza.
+  - `src/training_pipeline`: Treino e avaliação.
+  - `src/inference_pipeline`: Lógica de predição para produção.
+
+### 2\. Pipeline de MLOps (Obrigatório)
+
+- **Versionamento:** Integração completa com **MLflow** para registar parâmetros, métricas (MAE, RMSE, R²) e artefatos do modelo (`.pkl`).
+- **Orquestração:** Scripts organizados que podem ser executados individualmente ou encadeados via Makefile.
+
+### 3\. Deploy em Container (Obrigatório)
+
+- **API:** Desenvolvida em **FastAPI** para alta performance.
+- **Docker:** A solução é entregue containerizada. O Dockerfile constrói um ambiente isolado com todas as dependências geridas pelo `uv`.
+
+### 4\. Diferenciais Implementados (Opcionais)
+
+- ✅ **Testes Unitários:** Cobertura de testes com `pytest` para garantir a integridade da API e do schema de dados.
+- ✅ **CI/CD:** Pipeline no GitHub Actions que roda testes e build automático a cada push.
+- ✅ **Makefile:** Automação de comandos complexos para facilitar a execução.
+- ✅ **Visualização:** Aplicação Fullstack com Streamlit para demonstração interativa.
+- ✅ **Model Registry:** Uso de **MLflow** para registrar e versionar oficialmente o modelo como `FishWeightPredictor`.
 
 ## 🏗 Arquitetura da Solução
 
-O projeto está modularizado para garantir separação de responsabilidades:
+O projeto está modularizado em diretórios específicos:
 
 - **Feature Pipeline:** Ingestão, limpeza e transformação dos dados (`src/feature_pipeline`).
-- **Training Pipeline:** Treinamento do modelo XGBoost com rastreamento de métricas via MLflow (`src/training_pipeline`).
-- **Inference:** API REST de alto desempenho com FastAPI.
-- **Frontend:** Interface interativa com Streamlit para testes manuais.
-- **Infraestrutura:** Containerização com Docker e automação via Makefile.
-- **CI/CD:** Pipeline de testes automatizados via GitHub Actions.
+- **Training Pipeline:** Treino do modelo XGBoost com rastreamento via MLflow (`src/training_pipeline`).
+- **Inference:** API REST (`src/api`) e lógica de inferência (`src/inference_pipeline`).
+- **Frontend:** Interface com Streamlit (`src/app.py`).
+- **DevOps:** Configurações de Docker, Makefile e CI/CD.
 
 ## 📂 Estrutura do Projeto
 
@@ -43,7 +66,7 @@ O projeto está modularizado para garantir separação de responsabilidades:
 
 ---
 
-### Opção 1: Via Docker (Recomendado 🐳)
+### Opção 1: Via Docker (Recomendado)
 
 Esta opção sobe a API pronta para uso sem instalar nada no seu Python local.
 
@@ -54,10 +77,28 @@ Isso irá construir a imagem, remover containers antigos e iniciar a API na port
 make docker-auto
 ```
 
-**2. Testar a API:**
+**2. MLflow**
+
+O projeto utiliza MLflow não apenas para rastreamento de métricas, mas também como **Model Registry**.
+
+Para visualizar o catálogo de modelos:
+
+1. Execute o comando de interface:
+
+   ```bash
+   mlflow ui
+   ```
+
+2. Acesse a http://127.0.0.1:5000.
+
+3. Clique na aba "Models" no topo da página.
+
+4. Verá o modelo FishWeightPredictor com todas as suas versões (v1, v2, etc.) e estágios de produção.
+
+**3. Testar a API:**
 
 - Acesse a documentação interativa (Swagger): [http://localhost:8000/docs](https://www.google.com/search?q=http://localhost:8000/docs)
-- Ou veja a seção **"Como Realizar a Inferência"** abaixo.
+- Ou veja a secção **"Como Realizar a Inferência"** abaixo.
 
 ---
 
@@ -73,7 +114,7 @@ make install
 ```
 
 **2. Treinar o Modelo:**
-Executa o pipeline completo (Load -\> Preprocess -\> Feature Eng -\> Train). O modelo será salvo em `models/xgb_model.pkl` e as métricas registradas no MLflow.
+Executa o pipeline completo (Load -\> Preprocess -\> Feature Eng -\> Train). O modelo será salvo em `models/xgb_model.pkl` e as métricas registadas no MLflow.
 
 ```bash
 make train
@@ -96,7 +137,7 @@ make run-app
 
 ## 📡 Como Realizar a Inferência
 
-A API aceita requisições POST no endpoint `/predict`. Abaixo estão exemplos de como testar.
+A API aceita requisições POST no endpoint `/predict`.
 
 **Exemplo de Payload (JSON):**
 
@@ -130,34 +171,17 @@ curl -X 'POST' \
 }
 ```
 
-## ✅ Checklist de Entregas
-
-### Requisitos Obrigatórios
-
-- [x] **Python + ML:** Modelo XGBoost treinado com separação clara de pipelines.
-- [x] **Pipeline de MLOps:** Versionamento de modelos com MLflow e scripts modulares.
-- [x] **Deploy:** API servida via Container Docker.
-- [x] **README:** Documentação completa da arquitetura e execução.
-
-### Diferenciais Implementados (Opcionais)
-
-- [x] **Testes Unitários:** Cobertura de testes com pytest (API, Schema e Inferência).
-- [x] **CI/CD:** Pipeline no GitHub Actions para testes e build automático.
-- [x] **Makefile:** Automação de comandos para facilitar a execução.
-- [x] **Model Registry:** Integração com MLflow para rastreamento de experimentos.
-- [x] **Visualização:** Aplicação Fullstack com Streamlit.
-
 ## 🔮 Possíveis Melhorias
 
 Pontos identificados para evolução futura do projeto:
 
-- **Monitoramento de Drift:** Integração com EvidentlyAI para alertar se os peixes na inferência tiverem medidas muito diferentes do treino.
+- **Monitorização de Drift:** Integração com EvidentlyAI para alertar se os peixes na inferência tiverem medidas muito diferentes do treino.
 - **Deploy em Cloud:** Configuração de deploy contínuo (CD) para AWS ECS ou Lambda utilizando Terraform.
-- **Feature Store:** Para um cenário com milhões de registros, implementar uma Feature Store (ex: Feast) para servir features pré-calculadas.
+- **Feature Store:** Para um cenário com milhões de registos, implementar uma Feature Store (ex: Feast) para servir features pré-calculadas.
 - **Autenticação:** Adicionar camada de segurança (OAuth2) na API.
 
 ---
 
-**Autor:** [Seu Nome]
-
----
+**Autor:** Lucas Paulo de Souza Navegante
+**Créditos:** _anesriad/Regression_ML_EndtoEnd_ que foi o modelo base para este projeto.
+**Data:** 04/12/2025
