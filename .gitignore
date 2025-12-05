@@ -55,6 +55,7 @@ Thumbs.db
 
 # Modelos de ML
 models/
+*.pkl
 
 # Arquivo vazio
 Nul
