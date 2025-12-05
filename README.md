@@ -1,315 +1,163 @@
-# Fish Weight Prediction MLOps 🐟
+# 🐟 Fish Weight Prediction - End-to-End MLOps
 
-Este projeto implementa um pipeline End-to-End de Machine Learning para prever o peso de peixes com base em suas medidas físicas. O projeto segue boas práticas de MLOps, incluindo versionamento de código, containerização (Docker) e testes.
+Este projeto é uma solução completa de Machine Learning para prever o peso de peixes com base em medidas físicas. O objetivo foi demonstrar boas práticas de MLOps, desde a engenharia de dados até o deploy de uma API escalável e interface de usuário.
 
-## 📌 O Problema
+## 🎯 O Desafio
 
-O objetivo é utilizar regressão polinomial/linear (via XGBoost) para estimar a variável `Weight` (peso) com base em features como `Species`, `Length`, `Height` e `Width`.
+Desenvolver um pipeline reprodutível para treinar um modelo de regressão (**XGBoost**), versionar artefatos e disponibilizar o modelo para inferência via API e Docker.
 
-## 🏗 Arquitetura
+## 🏗 Arquitetura da Solução
 
-A solução está modularizada em:
+O projeto está modularizado para garantir separação de responsabilidades:
 
-1.  **Feature Pipeline:** Ingestão (`load.py`), Limpeza (`preprocess.py`) e Engenharia de Features (`feature_engineering.py`).
-2.  **Training Pipeline:** Treinamento do modelo XGBoost (`train.py`) e log de métricas.
-3.  **Inference Pipeline:** API REST (`FastAPI`) servindo o modelo.
-4.  **DevOps:** Dockerfile para containerização e Makefile para automação.
+- **Feature Pipeline:** Ingestão, limpeza e transformação dos dados (`src/feature_pipeline`).
+- **Training Pipeline:** Treinamento do modelo XGBoost com rastreamento de métricas via MLflow (`src/training_pipeline`).
+- **Inference:** API REST de alto desempenho com FastAPI.
+- **Frontend:** Interface interativa com Streamlit para testes manuais.
+- **Infraestrutura:** Containerização com Docker e automação via Makefile.
+- **CI/CD:** Pipeline de testes automatizados via GitHub Actions.
+
+## 📂 Estrutura do Projeto
+
+```text
+├── .github/workflows  # Pipeline de CI (Testes e Build)
+├── data/              # Dados brutos e processados
+├── models/            # Artefatos do modelo (.pkl)
+├── src/
+│   ├── api/           # Código da API (FastAPI)
+│   ├── feature_.../   # Scripts de processamento
+│   ├── training_.../  # Scripts de treino e tuning
+│   └── app.py         # Frontend Streamlit
+├── tests/             # Testes unitários e de integração
+├── Dockerfile         # Configuração da imagem da API
+├── Makefile           # Comandos rápidos de execução
+└── pyproject.toml     # Dependências (gerenciado pelo uv)
+```
 
 ## 🚀 Como Executar
 
 ### Pré-requisitos
 
-- Python 3.11+
-- Docker (opcional)
+- **Docker** (Recomendado para execução isolada)
+- Ou **Python 3.11+** com `uv` instalado para execução local.
 
-### 1. Instalação Local
+---
+
+### Opção 1: Via Docker (Recomendado 🐳)
+
+Esta opção sobe a API pronta para uso sem instalar nada no seu Python local.
+
+**1. Construir e Rodar a API:**
+Isso irá construir a imagem, remover containers antigos e iniciar a API na porta 8000.
+
+```bash
+make docker-auto
+```
+
+**2. Testar a API:**
+
+- Acesse a documentação interativa (Swagger): [http://localhost:8000/docs](https://www.google.com/search?q=http://localhost:8000/docs)
+- Ou veja a seção **"Como Realizar a Inferência"** abaixo.
+
+---
+
+### Opção 2: Execução Local (Desenvolvimento)
+
+Se preferir rodar os scripts manualmente:
+
+**1. Instalar dependências:**
 
 ```bash
 pip install uv
-uv sync
-# Ou use pip install -r requirements.txt se preferir
+make install
 ```
 
-2. Treinamento do Modelo
-
-Execute o pipeline completo para gerar o modelo (models/xgb_model.pkl):
+**2. Treinar o Modelo:**
+Executa o pipeline completo (Load -\> Preprocess -\> Feature Eng -\> Train). O modelo será salvo em `models/xgb_model.pkl` e as métricas registradas no MLflow.
 
 ```bash
 make train
-# Ou manualmente: python src/training_pipeline/train.py (após rodar os anteriores)
 ```
 
-3. Executando a API
+**3. Rodar a API:**
 
 ```bash
 make run-api
 ```
 
-Acesse a documentação em: http://localhost:8000/docs 4. Docker (Deploy)
-
-Para construir e rodar a aplicação em container:
-
-```bash
-# Constrói a imagem
-make docker-build
-
-# Roda o container na porta 8000
-make docker-run
-```
-
-🧪 Testes
-
-Para executar os testes unitários da API e validação de dados:
+**4. Rodar o Dashboard (Streamlit):**
+Para visualizar uma interface gráfica amigável:
 
 ```bash
-make test
+make run-app
 ```
 
-🛠 Tecnologias
+- Acesse em: [http://localhost:8501](https://www.google.com/search?q=http://localhost:8501)
 
-Linguagem: Python 3.11
+## 📡 Como Realizar a Inferência
 
-ML: XGBoost, Scikit-Learn, Pandas
+A API aceita requisições POST no endpoint `/predict`. Abaixo estão exemplos de como testar.
 
-API: FastAPI, Uvicorn
+**Exemplo de Payload (JSON):**
 
-Infra: Docker
+```json
+[
+  {
+    "Species": "Perch",
+    "Length1": 20.0,
+    "Length2": 22.0,
+    "Length3": 23.5,
+    "Height": 5.5,
+    "Width": 3.3
+  }
+]
+```
 
-Gerenciamento: Makefile, UV
+**Comando cURL:**
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8000/predict' \
+  -H 'Content-Type: application/json' \
+  -d '[{"Species": "Perch", "Length1": 20.0, "Length2": 22.0, "Length3": 23.5, "Height": 5.5, "Width": 3.3}]'
+```
+
+**Resposta Esperada:**
+
+```json
+{
+  "predictions": [245.32]
+}
+```
+
+## ✅ Checklist de Entregas
+
+### Requisitos Obrigatórios
+
+- [x] **Python + ML:** Modelo XGBoost treinado com separação clara de pipelines.
+- [x] **Pipeline de MLOps:** Versionamento de modelos com MLflow e scripts modulares.
+- [x] **Deploy:** API servida via Container Docker.
+- [x] **README:** Documentação completa da arquitetura e execução.
+
+### Diferenciais Implementados (Opcionais)
+
+- [x] **Testes Unitários:** Cobertura de testes com pytest (API, Schema e Inferência).
+- [x] **CI/CD:** Pipeline no GitHub Actions para testes e build automático.
+- [x] **Makefile:** Automação de comandos para facilitar a execução.
+- [x] **Model Registry:** Integração com MLflow para rastreamento de experimentos.
+- [x] **Visualização:** Aplicação Fullstack com Streamlit.
+
+## 🔮 Possíveis Melhorias
+
+Pontos identificados para evolução futura do projeto:
+
+- **Monitoramento de Drift:** Integração com EvidentlyAI para alertar se os peixes na inferência tiverem medidas muito diferentes do treino.
+- **Deploy em Cloud:** Configuração de deploy contínuo (CD) para AWS ECS ou Lambda utilizando Terraform.
+- **Feature Store:** Para um cenário com milhões de registros, implementar uma Feature Store (ex: Feast) para servir features pré-calculadas.
+- **Autenticação:** Adicionar camada de segurança (OAuth2) na API.
 
 ---
 
-### Passo a Passo Final para Corrigir o Erro 500
-
-1.  **Atualize o arquivo `src/api/main.py`** com o código do passo 1 acima.
-2.  **Garanta que o modelo existe:** Rode `make train` (ou os scripts python manualmente) na sua máquina **antes** de construir o Docker. O Dockerfile copia os arquivos da sua pasta atual. Se a pasta `models/` estiver vazia na sua máquina, ela estará vazia no Docker.
-    - _Verifique:_ Você deve ter um arquivo `models/xgb_model.pkl` e `models/target_encoder.pkl`.
-3.  **Reconstrua o Docker:**
-    ```bash
-    docker build -t fish-predictor .
-    ```
-4.  **Rode novamente:**
-    ```bash
-    docker run -p 8000:8000 fish-predictor
-    ```
-
-Agora, ao enviar o `curl` ou usar o Swagger, a API deve encontrar o modelo e funcionar corret
+**Autor:** [Seu Nome]
 
 ---
-
----
-
----
-
-## Housing ML end2end Project
-
-## Project Overview
-
-Housing Regression MLE is an end-to-end machine learning pipeline for predicting housing prices using XGBoost. The project follows ML engineering best practices with modular pipelines, experiment tracking via MLflow, containerization, AWS cloud deployment, and comprehensive testing. The system includes both a REST API and a Streamlit dashboard for interactive predictions.
-
-## Architecture
-
-The codebase is organized into distinct pipelines following the flow:
-`Load → Preprocess → Feature Engineering → Train → Tune → Evaluate → Inference → Batch → Serve`
-
-### Core Modules
-
-- **`src/feature_pipeline/`**: Data loading, preprocessing, and feature engineering
-
-  - `load.py`: Time-aware data splitting (train <2020, eval 2020-21, holdout ≥2022)
-  - `preprocess.py`: City normalization, deduplication, outlier removal
-  - `feature_engineering.py`: Date features, frequency encoding (zipcode), target encoding (city_full)
-
-- **`src/training_pipeline/`**: Model training and hyperparameter optimization
-
-  - `train.py`: Baseline XGBoost training with configurable parameters
-  - `tune.py`: Optuna-based hyperparameter tuning with MLflow integration
-  - `eval.py`: Model evaluation and metrics calculation
-
-- **`src/inference_pipeline/`**: Production inference
-
-  - `inference.py`: Applies same preprocessing/encoding transformations using saved encoders
-
-- **`src/batch/`**: Batch prediction processing
-
-  - `run_monthly.py`: Generates monthly predictions on holdout data
-
-- **`src/api/`**: FastAPI web service
-  - `main.py`: REST API with S3 integration, health checks, prediction endpoints, and batch processing
-
-### Web Applications
-
-- **`app.py`**: Streamlit dashboard for interactive housing price predictions
-  - Real-time predictions via FastAPI integration
-  - Interactive filtering by year, month, and region
-  - Visualization of predictions vs actuals with metrics (MAE, RMSE, % Error)
-  - Yearly trend analysis with highlighted selected periods
-
-### Cloud Infrastructure & Deployment
-
-- **AWS S3 Integration**: Data and model storage in `housing-regression-data` bucket
-- **Amazon ECR**: Container registry for Docker images
-- **Amazon ECS**: Container orchestration with Fargate
-- **Application Load Balancer**: Traffic distribution and routing
-- **CI/CD Pipeline**: Automated deployment via GitHub Actions
-
-#### ECS Services:
-
-- **housing-api-service**: FastAPI backend (port 8000, 1024 CPU, 3072 MB memory)
-- **housing-streamlit-service**: Streamlit dashboard (port 8501, 512 CPU, 1024 MB memory)
-
-### Data Leakage Prevention
-
-The project implements strict data leakage prevention:
-
-- Time-based splits (not random)
-- Encoders fitted only on training data
-- Leakage-prone columns dropped before training
-- Schema alignment enforced between train/eval/inference
-
-## Common Commands
-
-### Environment Setup
-
-```bash
-# Install dependencies using uv
-uv sync
-```
-
-### Testing
-
-```bash
-# Run all tests
-pytest
-
-# Run specific test modules
-pytest tests/test_features.py
-pytest tests/test_training.py
-pytest tests/test_inference.py
-
-# Run with verbose output
-pytest -v
-```
-
-### Data Pipeline
-
-```bash
-# 1. Load and split raw data
-python src/feature_pipeline/load.py
-
-# 2. Preprocess splits
-python -m src.feature_pipeline.preprocess
-
-# 3. Feature engineering
-python -m src.feature_pipeline.feature_engineering
-```
-
-### Training Pipeline
-
-```bash
-# Train baseline model
-python src/training_pipeline/train.py
-
-# Hyperparameter tuning with MLflow
-python src/training_pipeline/tune.py
-
-# Model evaluation
-python src/training_pipeline/eval.py
-```
-
-### Inference
-
-```bash
-# Single inference
-python src/inference_pipeline/inference.py --input data/raw/holdout.csv --output predictions.csv
-
-# Batch monthly predictions
-python src/batch/run_monthly.py
-```
-
-### API Service
-
-```bash
-# Start FastAPI server locally
-uv run uvicorn src.api.main:app --host 0.0.0.0 --port 8000
-```
-
-### Streamlit Dashboard
-
-```bash
-# Start Streamlit dashboard locally
-streamlit run app.py --server.port 8501 --server.address 0.0.0.0
-```
-
-### Docker
-
-```bash
-# Build API container
-docker build -t housing-regression .
-
-# Build Streamlit container
-docker build -t housing-streamlit -f Dockerfile.streamlit .
-
-# Run API container
-docker run -p 8000:8000 housing-regression
-
-# Run Streamlit container
-docker run -p 8501:8501 housing-streamlit
-```
-
-### MLflow Tracking
-
-```bash
-# Start MLflow UI (view experiments)
-mlflow ui
-```
-
-## Key Design Patterns
-
-### Pipeline Modularity
-
-Each pipeline component can be run independently with consistent interfaces. All modules accept configurable input/output paths for testing isolation.
-
-### Cloud-Native Architecture
-
-- **S3-First Storage**: Models and data automatically sync from S3 buckets
-- **Containerized Services**: Both API and dashboard run in Docker containers
-- **Auto-scaling Infrastructure**: ECS Fargate provides serverless container scaling
-- **Environment-based Configuration**: Separate configs for local development and production
-
-### Encoder Persistence
-
-Frequency and target encoders are saved as pickle files during training and loaded during inference to ensure consistent transformations.
-
-### Configuration Management
-
-Model parameters, file paths, and pipeline settings use sensible defaults but can be overridden through function parameters or environment variables. Production deployments use AWS environment variables.
-
-### Testing Strategy
-
-- Unit tests for individual pipeline components
-- Integration tests for end-to-end pipeline flows
-- Smoke tests for inference pipeline
-- All tests use temporary directories to avoid touching production data
-
-## Dependencies
-
-Key production dependencies (see `pyproject.toml`):
-
-- **ML/Data**: `xgboost==3.0.4`, `scikit-learn`, `pandas==2.1.1`, `numpy==1.26.4`
-- **API**: `fastapi`, `uvicorn`
-- **Dashboard**: `streamlit`, `plotly`
-- **Cloud**: `boto3` (AWS integration)
-- **Experimentation**: `mlflow`, `optuna`
-- **Quality**: `great-expectations`, `evidently`
-
-## File Structure Notes
-
-- **`data/`**: Raw, processed, and prediction data (time-structured, S3-synced)
-- **`models/`**: Trained models and encoders (pkl files, S3-synced)
-- **`mlruns/`**: MLflow experiment tracking data
-- **`configs/`**: YAML configuration files
-- **`notebooks/`**: Jupyter notebooks for EDA and experimentation
-- **`tests/`**: Comprehensive test suite with sample data
-- **AWS Task Definitions**: `housing-api-task-def.json`, `streamlit-task-def.json`
-- **CI/CD**: `.github/workflows/ci.yml` for automated deployment
