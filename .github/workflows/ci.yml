@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Instalar uv (Gerenciador de pacotes rápido)
+      # 2. Instalar uv
       - name: Install uv
         uses: astral-sh/setup-uv@v3
         with:
@@ -25,12 +25,11 @@ jobs:
       - name: Set up Python
         run: uv python install 3.11
 
-      # 4. Instalar Dependências do Projeto
+      # 4. Instalar Dependências
       - name: Install dependencies
         run: uv sync --frozen
 
-      # 5. Executar Pipeline de Treino
-      # Necessário para gerar 'models/xgb_model.pkl' e 'target_encoder.pkl' antes dos testes
+      # 5. Pipeline de Treino (Gera os arquivos .pkl para o teste)
       - name: Train Model
         run: |
           uv run python src/feature_pipeline/load.py
@@ -39,13 +38,14 @@ jobs:
           uv run python src/training_pipeline/train.py
 
       # 6. Rodar Testes Unitários
+      # Usamos 'python -m pytest' para garantir que o pacote 'src' seja encontrado
       - name: Run Tests
-        run: uv run pytest tests/
+        run: uv run python -m pytest tests/
 
-      # 7. Testar Build da API (Docker)
+      # 7. Testar Build da API
       - name: Build Docker Image (API)
         run: docker build -t fish-api -f Dockerfile .
 
-      # 8. Testar Build do Streamlit (Docker)
+      # 8. Testar Build do Streamlit
       - name: Build Docker Image (Frontend)
         run: docker build -t fish-frontend -f Dockerfile.streamlit .
